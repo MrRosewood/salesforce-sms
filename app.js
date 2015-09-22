@@ -7,58 +7,55 @@ var conf = {
   loginUrl: "https://test.salesforce.com",
   username: "gmoyer@candoris.com.tester",
   password: "RIe3s5LMwLRFteGnu4",
+  token: "HBXWxKy0ONzDdGrEWtfr8u35C",
   PORT:8000
 };
-
+var conn = new jsforce.Connection(conf);
 var express = require('express');
 var app = express();
 
 app.get('/sms', function(req, res) {
   console.log('Got it!');
-  //pushTimesheetToSalesforce();
-  res.send("success");
+  pushTimesheetToSalesforce();
+  res.sendStatus(200)
 });
 
 function loginToSF(cb) {
-  logger.info('Logging into Salesforce');
-  conn.login(config.sf.user, config.sf.password, function(err, userInfo) {
+  console.log('Logging into Salesforce');
+  conn.login(conf.username, conf.password + conf.token, function(err, userInfo) {
     if (err) {
-      logger.error('Error logging into Salesforce');
+      console.log('Error logging into Salesforce');
     } else {
-      logger.info('Logged into Salesforce');
+      console.log('Logged into Salesforce');
     }
     cb(err, userInfo);
   });
 }
 
 function createTimesheet(userInfo, cb) {
-  conn.sobject("Account").create(message, function(err, ret) {
-    if (err || !ret.success) {
-      return console.error(err, ret);
-    }
-    console.log("Created record id : " + ret.id);
-    cb(err, ret);
-  });
+  conn.apex.get("/timesheets/", function(err, res) {
+  if (err) { return console.error(err); }
+  console.log("response: ", res);
+});
 }
 
 function logOutOfSF(syncResults, cb) {
-  logger.info('Logging out of Salesforce');
+  console.log('Logging out of Salesforce');
   conn.logout(function(err) {
     if (err) {
-      logger.error('Error logging out of Salesforce');
+      console.log('Error logging out of Salesforce');
     } else {
-      logger.info('Logged out of Salesforce');
+      console.log('Logged out of Salesforce');
     }
     cb(err);
   });
 }
 
 function pushTimesheetToSalesforce() {
-  var conn = new jsforce.Connection(conf);
 
   var tasks = [
     async.apply(loginToSF),
-    async.apply(saveTimesheetSubmission),
+    async.apply(createTimesheet),
     async.apply(logOutOfSF)
   ];
   async.waterfall(tasks, function(err) {

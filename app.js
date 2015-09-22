@@ -37,8 +37,7 @@ function pushTimesheetToSalesforce(sms) {
         }
         cb(err, userInfo);
       });
-    }
-
+    },
     function createTimesheet(userInfo, cb) {
       var urlPath = "/timesheets?msisdn=" + sms.msisdn "&text=" + sms.message + "&message-timestamp=" + sms.timestamp
       conn.apex.get(urlPath, function(err, res) {
@@ -47,8 +46,7 @@ function pushTimesheetToSalesforce(sms) {
         }
         console.log("response: ", res);
       });
-    }
-
+    },
     function logOutOfSF(syncResults, cb) {
       console.log('Logging out of Salesforce');
       conn.logout(function(err) {

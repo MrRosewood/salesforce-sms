@@ -8,57 +8,59 @@ var conf = {
   username: "gmoyer@candoris.com.tester",
   password: "RIe3s5LMwLRFteGnu4",
   token: "HBXWxKy0ONzDdGrEWtfr8u35C",
-  PORT:8000
+  PORT: 8000
 };
 var conn = new jsforce.Connection(conf);
 var express = require('express');
 var app = express();
 
 app.get('/sms', function(req, res) {
-  console.log('Got it!');
-  pushTimesheetToSalesforce();
+  var sms = {
+    msisdn: req.param('msisdn'),
+    message: req.param('text'),
+    timestamp: req.param('message-timestamp')
+  };
+
+  pushTimesheetToSalesforce(sms);
   res.sendStatus(200)
 });
 
-function loginToSF(cb) {
-  console.log('Logging into Salesforce');
-  conn.login(conf.username, conf.password + conf.token, function(err, userInfo) {
-    if (err) {
-      console.log('Error logging into Salesforce');
-    } else {
-      console.log('Logged into Salesforce');
+function pushTimesheetToSalesforce(sms) {
+  async.waterfall([
+    function loginToSF(cb) {
+      console.log('Logging into Salesforce');
+      conn.login(conf.username, conf.password + conf.token, function(err, userInfo) {
+        if (err) {
+          console.log('Error logging into Salesforce');
+        } else {
+          console.log('Logged into Salesforce');
+        }
+        cb(err, userInfo);
+      });
     }
-    cb(err, userInfo);
-  });
-}
 
-function createTimesheet(userInfo, cb) {
-  conn.apex.get("/timesheets/", function(err, res) {
-  if (err) { return console.error(err); }
-  console.log("response: ", res);
-});
-}
-
-function logOutOfSF(syncResults, cb) {
-  console.log('Logging out of Salesforce');
-  conn.logout(function(err) {
-    if (err) {
-      console.log('Error logging out of Salesforce');
-    } else {
-      console.log('Logged out of Salesforce');
+    function createTimesheet(userInfo, cb) {
+      var urlPath = "/timesheets?msisdn=" + sms.msisdn "&text=" + sms.message + "&message-timestamp=" + sms.timestamp
+      conn.apex.get(urlPath, function(err, res) {
+        if (err) {
+          return console.error(err);
+        }
+        console.log("response: ", res);
+      });
     }
-    cb(err);
-  });
-}
 
-function pushTimesheetToSalesforce() {
-
-  var tasks = [
-    async.apply(loginToSF),
-    async.apply(createTimesheet),
-    async.apply(logOutOfSF)
-  ];
-  async.waterfall(tasks, function(err) {
+    function logOutOfSF(syncResults, cb) {
+      console.log('Logging out of Salesforce');
+      conn.logout(function(err) {
+        if (err) {
+          console.log('Error logging out of Salesforce');
+        } else {
+          console.log('Logged out of Salesforce');
+        }
+        cb(err);
+      });
+    }
+  ], function(err) {
     if (err) {
       console.error('Error in product sync job ', err);
       process.exit(1);

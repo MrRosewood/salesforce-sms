@@ -13,7 +13,7 @@ var conf = {
 var express = require('express');
 var app = express();
 
-app.get('/salesforce/timesheets', function(req, res) {
+app.get('/sms', function(req, res) {
   console.log('Got it!');
   //pushTimesheetToSalesforce();
   res.send("success");

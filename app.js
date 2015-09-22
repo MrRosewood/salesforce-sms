@@ -39,7 +39,7 @@ function pushTimesheetToSalesforce(sms) {
       });
     },
     function createTimesheet(userInfo, cb) {
-      var urlPath = "/timesheets?msisdn=" + sms.msisdn "&text=" + sms.message + "&message-timestamp=" + sms.timestamp
+      var urlPath = "/timesheets?msisdn=" + sms.msisdn + "&text=" + sms.message + "&message-timestamp=" + sms.timestamp;
       conn.apex.get(urlPath, function(err, res) {
         if (err) {
           return console.error(err);

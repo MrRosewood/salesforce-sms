@@ -1,13 +1,23 @@
+var express = require('express');
 var _ = require('lodash');
 var async = require('async');
 var jsforce = require('jsforce');
 
 var conf = {
-  loginUrl:"https://test.salesforce.com",
-  username:"gmoyer@candoris.com.tester",
-  password:"RIe3s5LMwLRFteGnu4"
+  loginUrl: "https://test.salesforce.com",
+  username: "gmoyer@candoris.com.tester",
+  password: "RIe3s5LMwLRFteGnu4",
+  PORT:8000
 };
-var conn = new jsforce.Connection(config.sf.oauth2);
+
+var express = require('express');
+var app = express();
+
+app.get('/salesforce/timesheets', function(req, res) {
+  console.log('Got it!');
+  //pushTimesheetToSalesforce();
+  res.send("success");
+});
 
 function loginToSF(cb) {
   logger.info('Logging into Salesforce');
@@ -21,7 +31,7 @@ function loginToSF(cb) {
   });
 }
 
-function saveTimesheetSubmission(userInfo, cb) {
+function createTimesheet(userInfo, cb) {
   conn.sobject("Account").create(message, function(err, ret) {
     if (err || !ret.success) {
       return console.error(err, ret);
@@ -29,7 +39,6 @@ function saveTimesheetSubmission(userInfo, cb) {
     console.log("Created record id : " + ret.id);
     cb(err, ret);
   });
-});
 }
 
 function logOutOfSF(syncResults, cb) {
@@ -44,16 +53,23 @@ function logOutOfSF(syncResults, cb) {
   });
 }
 
-var tasks = [
-  async.apply(loginToSF),
-  async.apply(saveTimesheetSubmission),
-  async.apply(logOutOfSF)
-];
-async.waterfall(tasks, function(err) {
-  if (err) {
-    console.error('Error in product sync job ', err);
-    process.exit(1);
-  } else {
-    process.exit(0);
-  }
-});
+function pushTimesheetToSalesforce() {
+  var conn = new jsforce.Connection(conf);
+
+  var tasks = [
+    async.apply(loginToSF),
+    async.apply(saveTimesheetSubmission),
+    async.apply(logOutOfSF)
+  ];
+  async.waterfall(tasks, function(err) {
+    if (err) {
+      console.error('Error in product sync job ', err);
+      process.exit(1);
+    } else {
+      process.exit(0);
+    }
+  });
+}
+
+var server = app.listen(conf.PORT);
+console.log("Express started on %s", conf.PORT);

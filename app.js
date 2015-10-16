@@ -27,8 +27,12 @@ app.get('/sms', function(req, res) {
   } else {
     res.sendStatus(401)
   }
-
 });
+app.all('*', function(req, res) {
+  chalk.magento('HTTP REQUEST', Date.now());
+  res.send(401);
+});
+
 
 function pushTimesheetToSalesforce(sms) {
   async.waterfall([

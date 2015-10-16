@@ -17,9 +17,9 @@ var app = express();
 
 app.get('/sms', function(req, res) {
   var sms = {
-    msisdn: req.params('msisdn'),
-    message: req.params('text'),
-    timestamp: req.params('message-timestamp')
+    msisdn: req.param('msisdn'),
+    message: req.param('text'),
+    timestamp: req.param('message-timestamp')
   };
   if(sms.msisdn && sms.message && sms.timestamp) {
     pushTimesheetToSalesforce(sms);

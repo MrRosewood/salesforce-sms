@@ -30,7 +30,7 @@ app.get('/sms', function(req, res) {
 });
 app.all('*', function(req, res) {
   chalk.magenta('HTTP REQUEST', Date.now());
-  res.send(401);
+  res.sendStatus(401);
 });
 
 

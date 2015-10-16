@@ -29,7 +29,7 @@ app.get('/sms', function(req, res) {
   }
 });
 app.all('*', function(req, res) {
-  chalk.magento('HTTP REQUEST', Date.now());
+  chalk.magenta('HTTP REQUEST', Date.now());
   res.send(401);
 });
 
